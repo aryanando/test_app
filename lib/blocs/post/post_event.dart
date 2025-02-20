@@ -17,3 +17,11 @@ class CreatePostEvent extends PostEvent {
 
   CreatePostEvent({this.content, this.image, this.video, this.youtubeLink});
 }
+
+class DeletePostEvent extends PostEvent {
+  final int postId;
+  DeletePostEvent(this.postId);
+
+  @override
+  List<Object?> get props => [postId];
+}

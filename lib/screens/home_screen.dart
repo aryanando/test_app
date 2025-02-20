@@ -20,15 +20,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
   bool isLoading = false;
+  int? currentUserId; // ✅ Store the logged-in user's ID
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
     context.read<PostBloc>().add(LoadPostsEvent());
-    context
-        .read<ProfileBloc>()
-        .add(LoadProfileEvent()); // ✅ Load user profile data
+    context.read<ProfileBloc>().add(LoadProfileEvent());
   }
 
   /// ✅ Load more posts when reaching bottom
@@ -59,11 +58,12 @@ class _HomeScreenState extends State<HomeScreen> {
         body: CustomScrollView(
           controller: _scrollController,
           slivers: [
-            /// ✅ `SliverToBoxAdapter` to include `CreatePostWidget` inside scrollable content
+            /// ✅ `SliverToBoxAdapter` to include `CreatePostWidget`
             SliverToBoxAdapter(
               child: BlocBuilder<ProfileBloc, ProfileState>(
                 builder: (context, state) {
                   if (state is ProfileLoaded) {
+                    currentUserId = state.user['id']; // ✅ Store user ID
                     return CreatePostWidget(
                       profileImageUrl: state.user['profile_image'] ?? "",
                       userName: state.user['name'] ?? "User",
@@ -96,7 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   return SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        return PostCard(post: state.posts[index]);
+                        return PostCard(
+                          post: state.posts[index],
+                          currentUserId: currentUserId ?? -1, // ✅ Pass user ID
+                        );
                       },
                       childCount: state.posts.length,
                     ),

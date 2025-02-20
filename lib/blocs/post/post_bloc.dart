@@ -14,6 +14,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<LoadPostsEvent>(_onLoadPosts);
     on<LikePostEvent>(_onLikePost);
     on<CreatePostEvent>(_onCreatePost);
+    on<DeletePostEvent>(_onDeletePost); // ✅ Handle delete post
   }
 
   Future<void> _onLoadPosts(
@@ -78,6 +79,20 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(PostLoaded(List.from(_allPosts))); // ✅ Refresh UI
     } else {
       emit(PostError("Failed to create post"));
+    }
+  }
+
+  /// ✅ Delete Post Function
+  Future<void> _onDeletePost(
+      DeletePostEvent event, Emitter<PostState> emit) async {
+    final bool isDeleted = await authRepository.deletePost(event.postId);
+
+    if (isDeleted) {
+      _allPosts.removeWhere(
+          (post) => post['id'] == event.postId); // ✅ Remove from list
+      emit(PostLoaded(List.from(_allPosts))); // ✅ Refresh UI
+    } else {
+      emit(PostError("Failed to delete post"));
     }
   }
 }

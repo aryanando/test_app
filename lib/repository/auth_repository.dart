@@ -202,4 +202,18 @@ class AuthRepository {
       return null;
     }
   }
+
+  Future<bool> deletePost(int postId) async {
+    try {
+      final response = await http.delete(Uri.parse("$baseUrl/posts/$postId"));
+
+      if (response.statusCode == 200) {
+        return true; // ✅ Successfully deleted
+      }
+      return false;
+    } catch (e) {
+      print("Error deleting post: $e");
+      return false;
+    }
+  }
 }
