@@ -75,7 +75,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     );
 
     if (response != null && response.containsKey('post')) {
-      _allPosts.insert(0, response['post']); // ✅ Add new post to the top
+      var newPost = response['post'];
+
+      // ✅ Fix: Convert YouTube ID to full URL immediately
+      if (newPost['video'] != null && newPost['video'].length == 11) {
+        newPost['video'] =
+            "https://www.youtube.com/watch?v=${newPost['video']}";
+      }
+
+      _allPosts.insert(0, newPost); // ✅ Add new post to the top
       emit(PostLoaded(List.from(_allPosts))); // ✅ Refresh UI
     } else {
       emit(PostError("Failed to create post"));

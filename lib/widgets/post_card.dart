@@ -192,6 +192,7 @@ class PostCard extends StatelessWidget {
 
   /// ✅ Function to Detect & Display Videos (YouTube or Uploaded)
   Widget _buildVideoWidget(String videoUrl, String content) {
+    print(videoUrl);
     if (videoUrl.contains("youtube.com") || videoUrl.contains("youtu.be")) {
       return Column(
         children: [
