@@ -55,6 +55,8 @@ app/
 
 ## 🔧 **Setup Laravel Back-end**
 
+Live Server : https://api-nando.batubhayangkara.com
+
 ### 1️⃣ **Clone Repository & Install Dependencies**
 ```sh
 git clone https://github.com/aryanando/test_laravel_api.git
