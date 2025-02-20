@@ -2,39 +2,135 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import '../blocs/post/post_bloc.dart';
 import '../blocs/post/post_event.dart';
 
 class CreatePostWidget extends StatefulWidget {
+  final String profileImageUrl;
+  final String userName;
+
+  CreatePostWidget({required this.profileImageUrl, required this.userName});
+
   @override
   _CreatePostWidgetState createState() => _CreatePostWidgetState();
 }
 
 class _CreatePostWidgetState extends State<CreatePostWidget> {
   final TextEditingController contentController = TextEditingController();
-  final TextEditingController youtubeLinkController = TextEditingController();
+  String? youtubeLink; // ✅ Store YouTube link
   File? _selectedImage;
   File? _selectedVideo;
 
   final picker = ImagePicker();
 
-  Future<void> _pickImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  /// ✅ Pick Image from Camera or Gallery
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await picker.pickImage(source: source);
     if (pickedFile != null)
       setState(() => _selectedImage = File(pickedFile.path));
   }
 
-  Future<void> _pickVideo() async {
-    final pickedFile = await picker.pickVideo(source: ImageSource.gallery);
+  /// ✅ Pick Video from Camera or Gallery
+  Future<void> _pickVideo(ImageSource source) async {
+    final pickedFile = await picker.pickVideo(source: source);
     if (pickedFile != null)
       setState(() => _selectedVideo = File(pickedFile.path));
+  }
+
+  /// ✅ Paste YouTube Link from Clipboard
+  Future<void> _pasteYoutubeLink() async {
+    ClipboardData? clipboardData =
+        await Clipboard.getData(Clipboard.kTextPlain);
+    if (clipboardData != null && clipboardData.text!.contains("youtube.com")) {
+      setState(() {
+        youtubeLink = clipboardData.text;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("YouTube link pasted!"),
+        backgroundColor: Colors.green,
+      ));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Invalid YouTube link!"),
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
+
+  /// ✅ Show Attachment Dialog (Image, Video, YouTube Link)
+  void _showAttachmentDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// 📷 **Photo Options**
+              ListTile(
+                leading: Icon(Icons.camera_alt, color: Colors.blue, size: 20),
+                title: Text("Take Photo", style: TextStyle(fontSize: 14)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.image, color: Colors.blue, size: 20),
+                title:
+                    Text("Select from Gallery", style: TextStyle(fontSize: 14)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+
+              /// 🎥 **Video Options**
+              ListTile(
+                leading: Icon(Icons.videocam, color: Colors.red, size: 20),
+                title: Text("Record Video", style: TextStyle(fontSize: 14)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickVideo(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.video_library, color: Colors.red, size: 20),
+                title: Text("Select Video from Gallery",
+                    style: TextStyle(fontSize: 14)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickVideo(ImageSource.gallery);
+                },
+              ),
+
+              /// 🔗 **YouTube Link Option**
+              ListTile(
+                leading: Icon(Icons.paste, color: Colors.green, size: 20),
+                title:
+                    Text("Paste YouTube Link", style: TextStyle(fontSize: 14)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pasteYoutubeLink();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _submitPost() {
     if (contentController.text.isEmpty &&
         _selectedImage == null &&
         _selectedVideo == null &&
-        youtubeLinkController.text.isEmpty) {
+        youtubeLink == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Post cannot be empty!"),
         backgroundColor: Colors.red,
@@ -46,15 +142,13 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
           content: contentController.text,
           image: _selectedImage,
           video: _selectedVideo,
-          youtubeLink: youtubeLinkController.text.isNotEmpty
-              ? youtubeLinkController.text
-              : null,
+          youtubeLink: youtubeLink,
         ));
 
-    // Clear inputs after posting
+    // ✅ Clear inputs after posting
     setState(() {
       contentController.clear();
-      youtubeLinkController.clear();
+      youtubeLink = null;
       _selectedImage = null;
       _selectedVideo = null;
     });
@@ -68,70 +162,109 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
-        padding: EdgeInsets.all(12),
+        padding: EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Post Content Input
-            TextField(
-              controller: contentController,
-              decoration: InputDecoration(
-                hintText: "What's on your mind?",
-                border: InputBorder.none,
-              ),
-              maxLines: 2,
-            ),
-            SizedBox(height: 10),
-
-            // YouTube Link Input
-            TextField(
-              controller: youtubeLinkController,
-              decoration: InputDecoration(
-                hintText: "Paste YouTube link (Optional)",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 10),
-
-            // Selected Image Preview
-            if (_selectedImage != null)
-              Image.file(_selectedImage!, height: 100, fit: BoxFit.cover),
-
-            // Selected Video Placeholder
-            if (_selectedVideo != null)
-              Container(
-                height: 100,
-                color: Colors.black,
-                child: Center(
-                    child: Icon(Icons.video_library, color: Colors.white)),
-              ),
-
+            // ✅ Compact Row: Profile, Input, Attach & Post Buttons
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Image Picker Button
-                IconButton(
-                  icon: Icon(Icons.image, color: Colors.blue),
-                  onPressed: _pickImage,
+                CircleAvatar(
+                  radius: 20, // ✅ Smaller Profile Picture
+                  backgroundColor: Colors.grey[300],
+                  child: widget.profileImageUrl.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.network(
+                            widget.profileImageUrl,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.person,
+                                  size: 24,
+                                  color: Colors
+                                      .grey[700]); // ✅ Fallback to default icon
+                            },
+                          ),
+                        )
+                      : Icon(Icons.person,
+                          size: 24,
+                          color: Colors
+                              .grey[700]), // ✅ Default icon if no profile image
                 ),
-
-                // Video Picker Button
-                IconButton(
-                  icon: Icon(Icons.videocam, color: Colors.red),
-                  onPressed: _pickVideo,
+                SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: contentController,
+                    decoration: InputDecoration(
+                      hintText: "What's on your mind, ${widget.userName}?",
+                      hintStyle: TextStyle(fontSize: 14),
+                      border: InputBorder.none,
+                    ),
+                    maxLines: 1,
+                    style: TextStyle(fontSize: 14),
+                  ),
                 ),
-
-                // Submit Post Button
-                ElevatedButton(
+                IconButton(
+                  icon: Icon(Icons.attach_file, color: Colors.blue, size: 20),
+                  onPressed: _showAttachmentDialog,
+                ),
+                IconButton(
+                  icon: Icon(Icons.send, color: Colors.green, size: 20),
                   onPressed: _submitPost,
-                  child: Text("Post"),
                 ),
               ],
             ),
+
+            SizedBox(height: 6),
+
+            // ✅ Show Selected YouTube Link
+            if (youtubeLink != null)
+              Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        youtubeLink!,
+                        style: TextStyle(color: Colors.blue, fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.red, size: 18),
+                      onPressed: () => setState(() => youtubeLink = null),
+                    ),
+                  ],
+                ),
+              ),
+
+            // ✅ Show Selected Media (Image or Video)
+            if (_selectedImage != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child:
+                    Image.file(_selectedImage!, height: 120, fit: BoxFit.cover),
+              ),
+
+            if (_selectedVideo != null)
+              Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Center(
+                  child:
+                      Icon(Icons.video_library, color: Colors.white, size: 30),
+                ),
+              ),
           ],
         ),
       ),

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth/auth_bloc.dart';
-import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
 import '../blocs/post/post_bloc.dart';
 import '../blocs/post/post_event.dart';
 import '../blocs/post/post_state.dart';
+import '../blocs/profile/profile_bloc.dart';
+import '../blocs/profile/profile_event.dart';
+import '../blocs/profile/profile_state.dart';
 import '../widgets/post_card.dart';
 import '../widgets/create_post_widget.dart';
-import 'login_screen.dart'; // ✅ Import Login Screen
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -24,8 +26,12 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
     context.read<PostBloc>().add(LoadPostsEvent());
+    context
+        .read<ProfileBloc>()
+        .add(LoadProfileEvent()); // ✅ Load user profile data
   }
 
+  /// ✅ Load more posts when reaching bottom
   void _onScroll() {
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 50 &&
@@ -37,17 +43,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// ✅ Dispatch Logout Event to `AuthBloc`
-  void _logout() {
-    context.read<AuthBloc>().add(LogoutEvent()); // ✅ Dispatch logout event
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthUnauthenticated) {
-          // ✅ Redirect to Login Screen on Logout
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -56,41 +56,61 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('Home'),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.logout, color: Colors.white), // ✅ Logout Button
-              onPressed: _logout,
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            CreatePostWidget(), // ✅ Always visible
-            Expanded(
-              child: BlocBuilder<PostBloc, PostState>(
+        body: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            /// ✅ `SliverToBoxAdapter` to include `CreatePostWidget` inside scrollable content
+            SliverToBoxAdapter(
+              child: BlocBuilder<ProfileBloc, ProfileState>(
                 builder: (context, state) {
-                  if (state is PostLoading && state is! PostLoaded) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (state is PostLoaded) {
-                    if (state.posts.isEmpty) {
-                      return Center(child: Text("No posts available"));
-                    }
-                    return ListView.builder(
-                      controller: _scrollController,
-                      itemCount: state.posts.length,
-                      itemBuilder: (context, index) {
-                        return PostCard(post: state.posts[index]);
-                      },
+                  if (state is ProfileLoaded) {
+                    return CreatePostWidget(
+                      profileImageUrl: state.user['profile_image'] ?? "",
+                      userName: state.user['name'] ?? "User",
                     );
-                  } else if (state is PostError) {
-                    return Center(child: Text(state.message));
+                  } else if (state is ProfileLoading) {
+                    return Center(child: CircularProgressIndicator());
+                  } else {
+                    return CreatePostWidget(
+                      profileImageUrl: "",
+                      userName: "User",
+                    );
                   }
-
-                  return Center(child: Text("No posts available"));
                 },
               ),
+            ),
+
+            /// ✅ `SliverList` for better performance
+            BlocBuilder<PostBloc, PostState>(
+              builder: (context, state) {
+                if (state is PostLoading && state is! PostLoaded) {
+                  return SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (state is PostLoaded) {
+                  if (state.posts.isEmpty) {
+                    return SliverFillRemaining(
+                      child: Center(child: Text("No posts available")),
+                    );
+                  }
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return PostCard(post: state.posts[index]);
+                      },
+                      childCount: state.posts.length,
+                    ),
+                  );
+                } else if (state is PostError) {
+                  return SliverFillRemaining(
+                    child: Center(child: Text(state.message)),
+                  );
+                }
+
+                return SliverFillRemaining(
+                  child: Center(child: Text("No posts available")),
+                );
+              },
             ),
           ],
         ),
