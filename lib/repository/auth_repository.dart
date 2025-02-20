@@ -204,8 +204,16 @@ class AuthRepository {
   }
 
   Future<bool> deletePost(int postId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
     try {
-      final response = await http.delete(Uri.parse("$baseUrl/posts/$postId"));
+      final response = await http.delete(
+        Uri.parse("$baseUrl/posts/$postId"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
 
       if (response.statusCode == 200) {
         return true; // ✅ Successfully deleted
