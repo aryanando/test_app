@@ -137,10 +137,10 @@ class AuthRepository {
           "updated_at": responseData["updated_at"],
         };
       }
-      print(response.statusCode);
+      // print(response.statusCode);
       return null;
     } catch (e) {
-      print("Error creating artist: $e");
+      // print("Error creating artist: $e");
       return null;
     }
   }
@@ -167,7 +167,7 @@ class AuthRepository {
       }
       return null;
     } catch (e) {
-      print("Error updating artist: $e");
+      // print("Error updating artist: $e");
       return null;
     }
   }
@@ -190,7 +190,7 @@ class AuthRepository {
       }
       return false;
     } catch (e) {
-      print("Error deleting artist: $e");
+      // print("Error deleting artist: $e");
       return false;
     }
   }
@@ -303,7 +303,7 @@ class AuthRepository {
       }
       return false;
     } catch (e) {
-      print("Error deleting post: $e");
+      // print("Error deleting post: $e");
       return false;
     }
   }

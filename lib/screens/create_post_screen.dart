@@ -6,11 +6,13 @@ import '../blocs/post/post_bloc.dart';
 import '../blocs/post/post_event.dart';
 
 class CreatePostScreen extends StatefulWidget {
+  const CreatePostScreen({super.key});
+
   @override
-  _CreatePostScreenState createState() => _CreatePostScreenState();
+  CreatePostScreenState createState() => CreatePostScreenState();
 }
 
-class _CreatePostScreenState extends State<CreatePostScreen> {
+class CreatePostScreenState extends State<CreatePostScreen> {
   final TextEditingController contentController = TextEditingController();
   final TextEditingController youtubeLinkController = TextEditingController();
   File? _selectedImage;
@@ -20,14 +22,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   Future<void> _pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null)
+    if (pickedFile != null) {
       setState(() => _selectedImage = File(pickedFile.path));
+    }
   }
 
   Future<void> _pickVideo() async {
     final pickedFile = await picker.pickVideo(source: ImageSource.gallery);
-    if (pickedFile != null)
+    if (pickedFile != null) {
       setState(() => _selectedVideo = File(pickedFile.path));
+    }
   }
 
   void _submitPost() {

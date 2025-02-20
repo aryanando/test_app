@@ -10,13 +10,14 @@ class CreatePostWidget extends StatefulWidget {
   final String profileImageUrl;
   final String userName;
 
-  CreatePostWidget({required this.profileImageUrl, required this.userName});
+  const CreatePostWidget(
+      {super.key, required this.profileImageUrl, required this.userName});
 
   @override
-  _CreatePostWidgetState createState() => _CreatePostWidgetState();
+  CreatePostWidgetState createState() => CreatePostWidgetState();
 }
 
-class _CreatePostWidgetState extends State<CreatePostWidget> {
+class CreatePostWidgetState extends State<CreatePostWidget> {
   final TextEditingController contentController = TextEditingController();
   String? youtubeLink; // ✅ Store YouTube link
   File? _selectedImage;
@@ -27,15 +28,17 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
   /// ✅ Pick Image from Camera or Gallery
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await picker.pickImage(source: source);
-    if (pickedFile != null)
+    if (pickedFile != null) {
       setState(() => _selectedImage = File(pickedFile.path));
+    }
   }
 
   /// ✅ Pick Video from Camera or Gallery
   Future<void> _pickVideo(ImageSource source) async {
     final pickedFile = await picker.pickVideo(source: source);
-    if (pickedFile != null)
+    if (pickedFile != null) {
       setState(() => _selectedVideo = File(pickedFile.path));
+    }
   }
 
   /// ✅ Paste YouTube Link from Clipboard
@@ -46,11 +49,13 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
       setState(() {
         youtubeLink = clipboardData.text;
       });
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("YouTube link pasted!"),
         backgroundColor: Colors.green,
       ));
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Invalid YouTube link!"),
         backgroundColor: Colors.red,

@@ -19,7 +19,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final Widget initialScreen;
-  MyApp({required this.initialScreen});
+  const MyApp({super.key, required this.initialScreen});
 
   @override
   Widget build(BuildContext context) {

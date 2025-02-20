@@ -9,7 +9,7 @@ class PostCard extends StatelessWidget {
   final Map<String, dynamic> post;
   final int currentUserId; // ✅ Pass the logged-in user's ID
 
-  PostCard({required this.post, required this.currentUserId});
+  const PostCard({super.key, required this.post, required this.currentUserId});
 
   @override
   Widget build(BuildContext context) {

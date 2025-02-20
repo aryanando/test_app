@@ -5,11 +5,13 @@ import '../blocs/artist/artist_event.dart';
 import '../blocs/artist/artist_state.dart';
 
 class CreateArtistScreen extends StatefulWidget {
+  const CreateArtistScreen({super.key});
+
   @override
-  _CreateArtistScreenState createState() => _CreateArtistScreenState();
+  CreateArtistScreenState createState() => CreateArtistScreenState();
 }
 
-class _CreateArtistScreenState extends State<CreateArtistScreen> {
+class CreateArtistScreenState extends State<CreateArtistScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
 

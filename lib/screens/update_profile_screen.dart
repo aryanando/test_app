@@ -5,11 +5,13 @@ import '../blocs/profile/profile_event.dart';
 import '../blocs/profile/profile_state.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
+  const UpdateProfileScreen({super.key});
+
   @override
-  _UpdateProfileScreenState createState() => _UpdateProfileScreenState();
+  UpdateProfileScreenState createState() => UpdateProfileScreenState();
 }
 
-class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
+class UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -34,6 +36,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
             // ✅ Navigate back to Profile Screen after update
             Future.delayed(Duration(seconds: 1), () {
+              if (!mounted) return;
               Navigator.pop(context);
             });
           }

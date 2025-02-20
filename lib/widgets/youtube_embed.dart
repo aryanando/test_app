@@ -5,13 +5,13 @@ import 'package:url_launcher/url_launcher.dart'; // ✅ Import url_launcher
 class YouTubeEmbed extends StatefulWidget {
   final String youtubeUrl;
 
-  YouTubeEmbed({required this.youtubeUrl});
+  const YouTubeEmbed({super.key, required this.youtubeUrl});
 
   @override
-  _YouTubeEmbedState createState() => _YouTubeEmbedState();
+  YouTubeEmbedState createState() => YouTubeEmbedState();
 }
 
-class _YouTubeEmbedState extends State<YouTubeEmbed> {
+class YouTubeEmbedState extends State<YouTubeEmbed> {
   late YoutubePlayerController _controller;
   String? videoId;
 
@@ -46,7 +46,7 @@ class _YouTubeEmbedState extends State<YouTubeEmbed> {
     return GestureDetector(
       onTap: () => {
         _launchYouTube("https://www.youtube.com/watch?v=$videoId"),
-        print('https://www.youtube.com/watch?v=$videoId')
+        // print('https://www.youtube.com/watch?v=$videoId')
       }, // ✅ Ensure tap works
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12), // ✅ Make it look better

@@ -7,11 +7,13 @@ import '../blocs/artist/artist_event.dart';
 import 'create_artist_screen.dart'; // ✅ Import Create Artist Screen
 
 class ArtistsScreen extends StatefulWidget {
+  const ArtistsScreen({super.key});
+
   @override
-  _ArtistsScreenState createState() => _ArtistsScreenState();
+  ArtistsScreenState createState() => ArtistsScreenState();
 }
 
-class _ArtistsScreenState extends State<ArtistsScreen> {
+class ArtistsScreenState extends State<ArtistsScreen> {
   @override
   void initState() {
     super.initState();
@@ -24,6 +26,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
       context,
       MaterialPageRoute(builder: (context) => CreateArtistScreen()),
     ).then((_) {
+      if (!mounted) return;
       context.read<ArtistBloc>().add(LoadArtistsEvent()); // ✅ Reload artists
     });
   }

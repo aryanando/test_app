@@ -8,14 +8,17 @@ class UpdateArtistScreen extends StatefulWidget {
   final String name;
   final String phone;
 
-  UpdateArtistScreen(
-      {required this.artistId, required this.name, required this.phone});
+  const UpdateArtistScreen(
+      {super.key,
+      required this.artistId,
+      required this.name,
+      required this.phone});
 
   @override
-  _UpdateArtistScreenState createState() => _UpdateArtistScreenState();
+  UpdateArtistScreenState createState() => UpdateArtistScreenState();
 }
 
-class _UpdateArtistScreenState extends State<UpdateArtistScreen> {
+class UpdateArtistScreenState extends State<UpdateArtistScreen> {
   late TextEditingController nameController;
   late TextEditingController phoneController;
 

@@ -4,11 +4,13 @@ import 'artists_screen.dart';
 import 'profile_screen.dart';
 
 class BottomNavScreen extends StatefulWidget {
+  const BottomNavScreen({super.key});
+
   @override
-  _BottomNavScreenState createState() => _BottomNavScreenState();
+  BottomNavScreenState createState() => BottomNavScreenState();
 }
 
-class _BottomNavScreenState extends State<BottomNavScreen> {
+class BottomNavScreenState extends State<BottomNavScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
