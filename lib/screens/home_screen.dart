@@ -65,30 +65,34 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: BlocBuilder<PostBloc, PostState>(
-          builder: (context, state) {
-            if (state is PostLoading && state is! PostLoaded) {
-              return Center(child: CircularProgressIndicator());
-            } else if (state is PostLoaded) {
-              if (state.posts.isEmpty) {
-                return Center(child: Text("No posts available"));
-              }
-              return ListView.builder(
-                controller: _scrollController,
-                itemCount: state.posts.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return CreatePostWidget();
+        body: Column(
+          children: [
+            CreatePostWidget(), // ✅ Always visible
+            Expanded(
+              child: BlocBuilder<PostBloc, PostState>(
+                builder: (context, state) {
+                  if (state is PostLoading && state is! PostLoaded) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (state is PostLoaded) {
+                    if (state.posts.isEmpty) {
+                      return Center(child: Text("No posts available"));
+                    }
+                    return ListView.builder(
+                      controller: _scrollController,
+                      itemCount: state.posts.length,
+                      itemBuilder: (context, index) {
+                        return PostCard(post: state.posts[index]);
+                      },
+                    );
+                  } else if (state is PostError) {
+                    return Center(child: Text(state.message));
                   }
-                  return PostCard(post: state.posts[index - 1]);
-                },
-              );
-            } else if (state is PostError) {
-              return Center(child: Text(state.message));
-            }
 
-            return Center(child: Text("No posts available"));
-          },
+                  return Center(child: Text("No posts available"));
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
