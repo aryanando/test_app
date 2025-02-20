@@ -76,17 +76,26 @@ class PostCard extends StatelessWidget {
                 ),
               ),
 
-            // Post Image (If Available)
+            // ✅ Show Image Below Video (if available)
             if (imageUrl != null && imageUrl.isNotEmpty)
-              Container(
-                margin: EdgeInsets.only(top: 10),
-                width: double.infinity,
-                height: 200,
-                decoration: BoxDecoration(
+              Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  image: DecorationImage(
-                    image: NetworkImage(imageUrl),
+                  child: Image.network(
+                    imageUrl,
+                    width: double.infinity,
+                    height: 200,
                     fit: BoxFit.cover,
+                    headers: {"Access-Control-Allow-Origin": "*"},
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(child: CircularProgressIndicator());
+                    },
+                    errorBuilder: (context, error, stackTrace) => Center(
+                      child: Text("Image not found link: $error",
+                          style: TextStyle(color: Colors.red)),
+                    ),
                   ),
                 ),
               ),

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:test_app/screens/create_post_screen.dart';
-// import 'package:timeago/timeago.dart' as timeago;
-import '../widgets/post_card.dart';
 import '../blocs/post/post_bloc.dart';
 import '../blocs/post/post_event.dart';
 import '../blocs/post/post_state.dart';
+import '../widgets/post_card.dart';
+import '../widgets/create_post_widget.dart'; // ✅ Import CreatePostWidget
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -24,11 +23,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      context
-          .read<PostBloc>()
-          .add(LoadPostsEvent()); // ✅ Load more posts only when at the bottom
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 50 &&
+        !isLoading) {
+      setState(() => isLoading = true);
+      context.read<PostBloc>().add(LoadPostsEvent());
+      Future.delayed(
+          Duration(seconds: 1), () => setState(() => isLoading = false));
     }
   }
 
@@ -46,15 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
             }
             return ListView.builder(
               controller: _scrollController,
-              itemCount: state.posts.length +
-                  (isLoading ? 1 : 0), // ✅ Show loader when fetching
+              itemCount: state.posts.length + 1, // ✅ Extra item for create post
               itemBuilder: (context, index) {
-                if (index == state.posts.length) {
-                  return Center(
-                      child:
-                          CircularProgressIndicator()); // ✅ Show loader at bottom
+                if (index == 0) {
+                  return CreatePostWidget(); // ✅ Show create post widget at the top
                 }
-                return PostCard(post: state.posts[index]);
+                return PostCard(post: state.posts[index - 1]);
               },
             );
           } else if (state is PostError) {
@@ -63,14 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           return Center(child: Text("No posts available"));
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (_) => CreatePostScreen()));
-        },
-        child: Icon(Icons.add, color: Colors.white),
       ),
     );
   }
