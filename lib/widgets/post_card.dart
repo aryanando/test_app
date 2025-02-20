@@ -22,7 +22,7 @@ class PostCard extends StatelessWidget {
         post['video']; // ✅ Video can be YouTube or uploaded file
     final String content = post['content'] ?? 'No content available';
     final int likeCount = post['like_count'] ?? 0;
-    final int dislikeCount = post['dislike_count'] ?? 0;
+    // final int dislikeCount = post['dislike_count'] ?? 0;
 
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),

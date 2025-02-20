@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthRepository {
-  final String baseUrl = "http://172.16.2.200:8081/api";
+  final String baseUrl = "https://api-nando.batubhayangkara.com/api";
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
