@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/widgets/video_player_widget.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/post/post_bloc.dart';
@@ -42,23 +43,15 @@ class PostCard extends StatelessWidget {
                     CircleAvatar(
                       radius: 22,
                       backgroundColor: Colors.grey[300],
-                      child: user['profile_image'] != null &&
-                              user['profile_image'].isNotEmpty
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(22),
-                              child: Image.network(
-                                user['profile_image'],
-                                width: 44,
-                                height: 44,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(Icons.person,
-                                      size: 24, color: Colors.grey[700]);
-                                },
-                              ),
-                            )
-                          : Icon(Icons.person,
-                              size: 24, color: Colors.grey[700]),
+                      backgroundImage: (user['profile_image'] != null &&
+                              user['profile_image'].isNotEmpty)
+                          ? NetworkImage(user['profile_image'])
+                          : null, // ✅ Use default icon if null
+                      child: (user['profile_image'] == null ||
+                              user['profile_image'].isEmpty)
+                          ? Icon(Icons.person,
+                              size: 24, color: Colors.grey[700])
+                          : null,
                     ),
                     SizedBox(width: 10),
                     Column(
@@ -124,23 +117,47 @@ class PostCard extends StatelessWidget {
   void _confirmDeletePost(BuildContext context, int postId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Delete Post"),
-        content: Text("Are you sure you want to delete this post?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              context.read<PostBloc>().add(DeletePostEvent(postId));
-              Navigator.pop(context);
-            },
-            child: Text("Delete", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      builder: (context) {
+        bool isDeleting = false;
+
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Text("Delete Post"),
+            content: isDeleting
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 10),
+                      Text("Deleting post..."),
+                    ],
+                  )
+                : Text("Are you sure you want to delete this post?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () async {
+                  setState(() => isDeleting = true); // ✅ Show loader
+
+                  // ✅ Dispatch delete event
+                  context.read<PostBloc>().add(DeletePostEvent(postId));
+
+                  // ✅ Wait briefly before closing
+                  await Future.delayed(Duration(milliseconds: 500));
+
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text("Delete", style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          );
+        });
+      },
     );
   }
 
@@ -168,12 +185,17 @@ class PostCard extends StatelessWidget {
 
   /// ✅ Function to Load Image with Error Handling
   Widget _buildImageWidget(String imageUrl) {
+    // ✅ Convert relative path to full URL
+    final String baseUrl = "https://api-nando.batubhayangkara.com/storage/";
+    String fixedImageUrl =
+        (!imageUrl.startsWith("http")) ? "$baseUrl$imageUrl" : imageUrl;
+
     return Padding(
       padding: EdgeInsets.only(top: 10),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Image.network(
-          imageUrl,
+          fixedImageUrl,
           width: double.infinity,
           height: 200,
           fit: BoxFit.cover,
@@ -190,13 +212,19 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  /// ✅ Function to Detect & Display Videos (YouTube or Uploaded)
+  /// ✅ Function to Detect & Display Videos (Uploaded or YouTube)
   Widget _buildVideoWidget(String videoUrl, String content) {
-    print(videoUrl);
+    final String baseUrl = "https://api-nando.batubhayangkara.com/storage/";
+
+    // ✅ Convert relative path to full URL
+    if (!videoUrl.startsWith("http")) {
+      videoUrl = "$baseUrl$videoUrl";
+    }
+
     if (videoUrl.contains("youtube.com") || videoUrl.contains("youtu.be")) {
       return Column(
         children: [
-          YouTubeEmbed(youtubeUrl: videoUrl),
+          YouTubeEmbed(youtubeUrl: videoUrl), // ✅ Show YouTube Video
           if (content.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: 10),
@@ -208,29 +236,26 @@ class PostCard extends StatelessWidget {
         ],
       );
     } else {
-      return Column(
-        children: [
-          Container(
-            margin: EdgeInsets.only(top: 10),
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child:
-                  Icon(Icons.play_circle_fill, color: Colors.white, size: 50),
-            ),
-          ),
-          if (content.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.only(top: 10),
-              child: Text(content, style: TextStyle(fontSize: 16)),
-            ),
-        ],
-      );
+      return _buildUploadedVideoPlayer(videoUrl, content);
     }
+  }
+
+  /// ✅ Function to Play Uploaded Videos Using `video_player`
+  Widget _buildUploadedVideoPlayer(String videoUrl, String content) {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity, // ✅ Set width
+          height: 200, // ✅ Set a fixed height
+          child: VideoPlayerWidget(videoUrl: videoUrl),
+        ),
+        if (content.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: Text(content, style: TextStyle(fontSize: 16)),
+          ),
+      ],
+    );
   }
 
   /// ✅ Function to Build Like Button & Interactions

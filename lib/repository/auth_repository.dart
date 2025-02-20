@@ -256,6 +256,7 @@ class AuthRepository {
     var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/posts'));
 
     request.headers['Authorization'] = 'Bearer $token';
+    request.headers['Accept'] = 'application/json';
 
     if (content != null) request.fields['content'] = content;
     if (youtubeLink != null) request.fields['youtube_link'] = youtubeLink;
@@ -279,6 +280,7 @@ class AuthRepository {
     var response = await request.send();
     var responseData = await response.stream.bytesToString();
 
+    print(responseData);
     if (response.statusCode == 200 || response.statusCode == 201) {
       return jsonDecode(responseData);
     } else {
