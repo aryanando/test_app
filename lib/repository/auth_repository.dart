@@ -112,6 +112,89 @@ class AuthRepository {
     }
   }
 
+  /// ✅ Create Artist API Call
+  Future<Map<String, dynamic>?> createArtist(
+      {required String name, required String phone}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/artist"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({"name": name, "phone": phone}),
+      );
+
+      if (response.statusCode == 201) {
+        final responseData = jsonDecode(response.body);
+        return {
+          "id": responseData["id"],
+          "name": responseData["name"],
+          "phone": responseData["phone"],
+          "created_at": responseData["created_at"],
+          "updated_at": responseData["updated_at"],
+        };
+      }
+      print(response.statusCode);
+      return null;
+    } catch (e) {
+      print("Error creating artist: $e");
+      return null;
+    }
+  }
+
+  /// ✅ Update Artist API Call
+  Future<Map<String, dynamic>?> updateArtist(
+      {required int artistId,
+      required String name,
+      required String phone}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    try {
+      final response = await http.put(
+        Uri.parse("$baseUrl/artist/$artistId"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({"name": name, "phone": phone}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print("Error updating artist: $e");
+      return null;
+    }
+  }
+
+  /// ✅ Delete Artist API Call
+  Future<bool> deleteArtist(int artistId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    try {
+      final response = await http.delete(
+        Uri.parse("$baseUrl/artist/$artistId"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 204) {
+        return true; // ✅ Successfully deleted
+      }
+      return false;
+    } catch (e) {
+      print("Error deleting artist: $e");
+      return false;
+    }
+  }
+
   Future<Map<String, dynamic>?> getPosts(int page) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');

@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => AuthBloc(AuthRepository())),
         BlocProvider(create: (context) => ProfileBloc(AuthRepository())),
-        BlocProvider(create: (context) => ArtistsBloc(AuthRepository())),
+        BlocProvider(create: (context) => ArtistBloc(AuthRepository())),
         BlocProvider(create: (context) => PostBloc(AuthRepository())),
       ],
       child: MaterialApp(
